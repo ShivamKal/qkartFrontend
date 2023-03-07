@@ -12,6 +12,7 @@ const Header = ({ children, hasHiddenAuthButtons }) => {
       localStorage.removeItem("token")
       localStorage.removeItem("balance")
       history.push('/')
+      window.location.reload()
   }
   let username = localStorage.getItem("username") || ""
   let box  = <Box></Box>;
