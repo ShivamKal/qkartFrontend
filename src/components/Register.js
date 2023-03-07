@@ -3,12 +3,14 @@ import { Box } from "@mui/system";
 import axios from "axios";
 import { useSnackbar } from "notistack";
 import React, { useState } from "react";
+import { Link, useHistory } from "react-router-dom";
 import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Register.css";
 
 const Register = () => {
+  let history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const [formData, setData] = useState(
       {
@@ -44,9 +46,13 @@ const Register = () => {
     try {
       if(validateInput(formData)){
         delete formData.confirmPassword
-        await axios.post(`${config?.endpoint}/auth/register`, JSON.stringify(formData),
+        const res = await axios.post(`${config?.endpoint}/auth/register`, JSON.stringify(formData),
         {headers: {"Content-Type" : "application/json"}})
-        enqueueSnackbar("success", {variant: "success"})
+        console.log(res)
+        if(res?.data?.success){
+          enqueueSnackbar("success", {variant: "success"})
+          history.push("/login");
+        }
       }
     } catch (e) {
       enqueueSnackbar({...e}?.response?.data?.message, {variant: "warning"})
@@ -153,9 +159,7 @@ const Register = () => {
            </Button>
           <p className="secondary-action">
             Already have an account?{" "}
-             <a className="link" href="#">
-              Login here
-             </a>
+            <Link className="link" to="/login">Login here</Link>
           </p>
         </Stack>
       </Box>

@@ -10,8 +10,14 @@ import Header from "./Header";
 import "./Login.css";
 
 const Login = () => {
+  let history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-
+  const [formData, setData] = useState(
+    {
+      username: "",
+      password: "",
+    }
+);
   // TODO: CRIO_TASK_MODULE_LOGIN - Fetch the API response
   /**
    * Perform the Login API call
@@ -38,6 +44,25 @@ const Login = () => {
    *
    */
   const login = async (formData) => {
+    try {
+      if(validateInput(formData)){
+        delete formData.confirmPassword
+        const res = await axios.post(`${config?.endpoint}/auth/login`, JSON.stringify(formData),
+        {headers: {"Content-Type" : "application/json"}})
+        console.log("login data -->", res?.data)
+        persistLogin(res?.data?.token, res?.data?.username, res?.data?.balance)
+        enqueueSnackbar("Logged in successfully", {variant: "success"})
+        history.push("/");
+      }
+    } catch (e) {
+      const errObj = {...e}
+      if({...e}?.response?.status === 400){
+        enqueueSnackbar(errObj?.response?.data?.message, {variant: "warning"})
+      }else{
+        enqueueSnackbar("Something went wrong. Check that the backend is running, reachable and returns valid JSON.", {variant: "warning"})
+      }
+     
+    }
   };
 
   // TODO: CRIO_TASK_MODULE_LOGIN - Validate the input
@@ -56,6 +81,13 @@ const Login = () => {
    * -    Check that password field is not an empty value - "Password is a required field"
    */
   const validateInput = (data) => {
+    if(data.username === ""){
+      enqueueSnackbar("Username is a required field",{variant: "warning"})
+    }
+    else if(data.password === ""){
+      enqueueSnackbar("Password is a required field",{variant: "warning"})
+    }
+    return true;
   };
 
   // TODO: CRIO_TASK_MODULE_LOGIN - Persist user's login information
@@ -75,8 +107,18 @@ const Login = () => {
    * -    `balance` field in localStorage can be used to store the balance amount in the user's wallet
    */
   const persistLogin = (token, username, balance) => {
+    localStorage.setItem("token", token)
+    localStorage.setItem("username", username)
+    localStorage.setItem("balance", balance)
   };
-
+  const onChangeHandler = (e) => {
+    setData(prevState => {
+        return {
+          ...prevState,
+          [e.target.name] : e.target.value
+        }
+    })
+  }
   return (
     <Box
       display="flex"
@@ -87,6 +129,36 @@ const Login = () => {
       <Header hasHiddenAuthButtons />
       <Box className="content">
         <Stack spacing={2} className="form">
+        <h2 className="title">Login</h2>
+          <TextField
+            id="username"
+            label="Username"
+            variant="outlined"
+            title="Username"
+            name="username"
+            placeholder="Enter Username"
+            fullWidth
+            value={formData?.username}
+            onChange={onChangeHandler}
+          />
+          <TextField
+            id="password"
+            variant="outlined"
+            label="Password"
+            name="password"
+            type="password"
+            fullWidth
+            placeholder="Enter a password with minimum 6 characters"
+            value={formData?.password}
+            onChange={onChangeHandler}
+          />
+           <Button className="button" variant="contained" onClick={() => login(formData)}>
+            LOGIN TO QKART
+           </Button>
+          <p className="secondary-action">
+            Don't have an account?{" "}
+            <Link className="link" to="/register">Register Now</Link>
+          </p>
         </Stack>
       </Box>
       <Footer />

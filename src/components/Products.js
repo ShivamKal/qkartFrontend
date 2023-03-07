@@ -13,23 +13,12 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Products.css";
-
-
-
 const Products = () => {
-
-
-
-
-
-
-
   return (
     <div>
       <Header>
 
       </Header>
-
        <Grid container>
          <Grid item className="product-grid">
            <Box className="hero">
@@ -44,5 +33,4 @@ const Products = () => {
     </div>
   );
 };
-
 export default Products;
