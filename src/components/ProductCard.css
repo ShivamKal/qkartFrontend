@@ -13,3 +13,12 @@
     text-transform: none;
     font-weight: 600;
 }
+.card-button-custom{
+    background-color: #00a278 !important;
+    color: #fff !important;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap:10px;
+}

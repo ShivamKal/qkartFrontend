@@ -17,7 +17,9 @@
 
 .product-grid {
   width: 100%;
+  padding: 15px;
 }
+
 
 .hero-heading {
   color: #fff;
@@ -69,4 +71,13 @@
   .search-desktop {
     display: block !important;
   }
+}
+.loading-section{
+  height: 30vh;
+  width: 100%;
+  display: flex !important;
+  justify-content: center !important; 
+  align-items: center !important;
+  flex-direction: column !important;
+  gap: 10px;
 }
