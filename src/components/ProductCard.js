@@ -13,7 +13,6 @@ import Card from './MUI/Card';
 
 
 const ProductCard = ({ product, handleAddToCart }) => {
-  // console.log('called',product);
   return (
     <Card key={product.key} className="card" image={product.image} title={product.name} cost={product.cost} rating={product.rating} onClick={handleAddToCart}/>
   );
