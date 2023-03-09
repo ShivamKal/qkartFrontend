@@ -350,7 +350,6 @@ const Products = () => {
         }
       )
       .then((response) => {
-        console.log("clicked");
         setState((preState) => ({
           ...preState,
           cartItems: generateCartItemsFrom(response.data, state.products),
