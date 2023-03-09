@@ -1,24 +1,34 @@
-import { Button, CircularProgress, Stack, TextField } from "@mui/material";
+import { Button, Stack, TextField } from "@mui/material";
 import { Box } from "@mui/system";
 import axios from "axios";
 import { useSnackbar } from "notistack";
-import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Register.css";
+import { useHistory, Link } from "react-router-dom";
+import Load from "./MUI/Loading";
 
 const Register = () => {
-  let history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const [formData, setData] = useState(
-      {
-        username: "",
-        password: "",
-        confirmPassword : ""
-      }
-  );
+  const [user, setUser] = useState({
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [fetchResponse, setFetchResponse] = useState(false);
+
+  const handleChange = (event) => {
+    setUser({
+      ...user,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const history = useHistory();
+
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement the register function
   /**
    * Definition for register handler
@@ -42,20 +52,30 @@ const Register = () => {
    *      "message": "Username is already taken"
    * }
    */
+
   const register = async (formData) => {
     try {
-      if(validateInput(formData)){
-        delete formData.confirmPassword
-        const res = await axios.post(`${config?.endpoint}/auth/register`, JSON.stringify(formData),
-        {headers: {"Content-Type" : "application/json"}})
-        console.log(res)
-        if(res?.data?.success){
-          enqueueSnackbar("success", {variant: "success"})
-          history.push("/login");
-        }
+      if (validateInput(formData)) {
+        delete formData.confirmPassword;
+        formData = JSON.stringify(formData);
+        setFetchResponse(true);
+        await axios.post(`${config.endpoint}/auth/register`, formData, {
+          headers: { "Content-Type": "application/json" },
+        });
+        setFetchResponse(false);
+        enqueueSnackbar("success", { variant: "success" });
+        history.push("/login", { from: "Register" });
       }
     } catch (e) {
-      enqueueSnackbar({...e}?.response?.data?.message, {variant: "warning"})
+      setFetchResponse(false);
+      if (e.response.status >= 400) {
+        enqueueSnackbar(e.response.data.message, { variant: "error" });
+      } else {
+        enqueueSnackbar(
+          "Something went wrong. Check that the backend is running, reachable and returns valid JSON",
+          { variant: "warning" }
+        );
+      }
     }
   };
 
@@ -79,36 +99,29 @@ const Register = () => {
    */
 
   const validateInput = (data) => {
-    if(data.username === ""){
-      enqueueSnackbar("Username is a required field",{variant: "warning"})
-    }
-    else if(data.username.length < 6){
-      enqueueSnackbar("Username must be at least 6 characters",{variant: "warning"})
+    console.log(data);
+    if (data.username === "") {
+      enqueueSnackbar("Username required", { variant: "warning" });
+      return false;
+    } else if (data.username.length < 6) {
+      enqueueSnackbar("Username must be atleast 6 characters", {
+        variant: "warning",
+      });
+      return false;
+    } else if (data.password === "") {
+      enqueueSnackbar("Password required", { variant: "warning" });
+      return false;
+    } else if (data.password.length < 6) {
+      enqueueSnackbar("Password must be atleast 6 characters", {
+        variant: "warning",
+      });
+      return false;
+    } else if (data.confirmPassword !== data.password) {
+      enqueueSnackbar("Password do not match", { variant: "warning" });
       return false;
     }
-    else if(data.password === ""){
-      enqueueSnackbar("Password is a required field",{variant: "warning"})
-    }
-    else if(data.password.length < 6){
-      enqueueSnackbar("Password must be at least 6 characters",{variant: "warning"})
-      return false;
-    }
-    else if(data.password !== data.confirmPassword){ 
-      enqueueSnackbar("Passwords do not match",{variant: "warning"})
-      return false;
-    }
-
     return true;
-  }
-
-  const onChangeHandler = (e) => {
-    setData(prevState => {
-        return {
-          ...prevState,
-          [e.target.name] : e.target.value
-        }
-    })
-  }
+  };
 
   return (
     <Box
@@ -117,7 +130,7 @@ const Register = () => {
       justifyContent="space-between"
       minHeight="100vh"
     >
-      <Header hasHiddenAuthButtons />
+      <Header />
       <Box className="content">
         <Stack spacing={2} className="form">
           <h2 className="title">Register</h2>
@@ -128,9 +141,8 @@ const Register = () => {
             title="Username"
             name="username"
             placeholder="Enter Username"
+            onChange={handleChange}
             fullWidth
-            value={formData?.username}
-            onChange={onChangeHandler}
           />
           <TextField
             id="password"
@@ -141,8 +153,7 @@ const Register = () => {
             helperText="Password must be atleast 6 characters length"
             fullWidth
             placeholder="Enter a password with minimum 6 characters"
-            value={formData?.password}
-            onChange={onChangeHandler}
+            onChange={handleChange}
           />
           <TextField
             id="confirmPassword"
@@ -151,15 +162,25 @@ const Register = () => {
             name="confirmPassword"
             type="password"
             fullWidth
-            value={formData?.confirmPassword}
-            onChange={onChangeHandler}
+            onChange={handleChange}
           />
-           <Button className="button" variant="contained" onClick={() => register(formData)}>
-            Register Now
-           </Button>
+          {!fetchResponse && (
+            <Button
+              className="button"
+              variant="contained"
+              onClick={() => register(user)}
+            >
+              Register Now
+            </Button>
+          )}
+          <Box display="flex" justifyContent="center" alignItems="center">
+            {fetchResponse && <Load />}
+          </Box>
           <p className="secondary-action">
             Already have an account?{" "}
-            <Link className="link" to="/login">Login here</Link>
+            <Link className="link" to="/login">
+              Login here
+            </Link>
           </p>
         </Stack>
       </Box>

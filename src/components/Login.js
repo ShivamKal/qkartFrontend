@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Stack, TextField } from "@mui/material";
+import { Button, Stack, TextField } from "@mui/material";
 import { Box } from "@mui/system";
 import axios from "axios";
 import { useSnackbar } from "notistack";
@@ -8,16 +8,24 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Login.css";
+import Load from "./MUI/Loading";
 
 const Login = () => {
-  let history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const [formData, setData] = useState(
-    {
-      username: "",
-      password: "",
-    }
-);
+  const [user, setUser] = useState({
+    username: "",
+    password: "",
+  });
+  const [fetchResponse, setFetchResponse] = useState(false);
+  const history = useHistory();
+
+  const handleChange = (event) => {
+    setUser({
+      ...user,
+      [event.target.name]: event.target.value,
+    });
+  };
+
   // TODO: CRIO_TASK_MODULE_LOGIN - Fetch the API response
   /**
    * Perform the Login API call
@@ -45,23 +53,32 @@ const Login = () => {
    */
   const login = async (formData) => {
     try {
-      if(validateInput(formData)){
-        delete formData.confirmPassword
-        const res = await axios.post(`${config?.endpoint}/auth/login`, JSON.stringify(formData),
-        {headers: {"Content-Type" : "application/json"}})
-        console.log("login data -->", res?.data)
-        persistLogin(res?.data?.token, res?.data?.username, res?.data?.balance)
-        enqueueSnackbar("Logged in successfully", {variant: "success"})
-        history.push("/");
+      if (validateInput(formData)) {
+        setFetchResponse(true);
+        const url = `${config.endpoint}/auth/login`;
+        const response = await axios.post(url, {
+          username: formData.username,
+          password: formData.password,
+        });
+        const { token, username, balance } = response.data;
+        console.log(response.data);
+        setFetchResponse(false);
+        enqueueSnackbar("Logged in successfully", { variant: "success" });
+        persistLogin(token, username, balance);
+        history.push("/", { from: "Login" });
       }
-    } catch (e) {
-      const errObj = {...e}
-      if({...e}?.response?.status === 400){
-        enqueueSnackbar(errObj?.response?.data?.message, {variant: "warning"})
-      }else{
-        enqueueSnackbar("Something went wrong. Check that the backend is running, reachable and returns valid JSON.", {variant: "warning"})
+    } catch (error) {
+      setFetchResponse(false);
+      // console.log(error.response);
+      // console.log(error.response.data.message);
+      if (error.response.status >= 400) {
+        enqueueSnackbar(error.response.data.message, { variant: "error" });
+      } else {
+        enqueueSnackbar(
+          "Something went wrong. Check that the backend is running, reachable and returns valid JSON",
+          { variant: "warning" }
+        );
       }
-     
     }
   };
 
@@ -81,13 +98,17 @@ const Login = () => {
    * -    Check that password field is not an empty value - "Password is a required field"
    */
   const validateInput = (data) => {
-    if(data.username === ""){
-      enqueueSnackbar("Username is a required field",{variant: "warning"})
+    const { username, password } = data;
+
+    if (username === "") {
+      enqueueSnackbar("Username is a required field", { variant: "warning" });
+      return false;
+    } else if (password === "") {
+      enqueueSnackbar("Password is a required field", { variant: "warning" });
+      return false;
+    } else {
+      return true;
     }
-    else if(data.password === ""){
-      enqueueSnackbar("Password is a required field",{variant: "warning"})
-    }
-    return true;
   };
 
   // TODO: CRIO_TASK_MODULE_LOGIN - Persist user's login information
@@ -107,18 +128,11 @@ const Login = () => {
    * -    `balance` field in localStorage can be used to store the balance amount in the user's wallet
    */
   const persistLogin = (token, username, balance) => {
-    localStorage.setItem("token", token)
-    localStorage.setItem("username", username)
-    localStorage.setItem("balance", balance)
+    localStorage.setItem("token", token);
+    localStorage.setItem("username", username);
+    localStorage.setItem("balance", balance);
   };
-  const onChangeHandler = (e) => {
-    setData(prevState => {
-        return {
-          ...prevState,
-          [e.target.name] : e.target.value
-        }
-    })
-  }
+
   return (
     <Box
       display="flex"
@@ -126,38 +140,51 @@ const Login = () => {
       justifyContent="space-between"
       minHeight="100vh"
     >
-      <Header hasHiddenAuthButtons />
+      <Header hasHiddenAuthButtons={false} />
       <Box className="content">
         <Stack spacing={2} className="form">
-        <h2 className="title">Login</h2>
+          <h2 className="title">Login</h2>
           <TextField
             id="username"
-            label="Username"
+            label="username"
             variant="outlined"
             title="Username"
             name="username"
             placeholder="Enter Username"
             fullWidth
-            value={formData?.username}
-            onChange={onChangeHandler}
+            onChange={handleChange}
           />
           <TextField
             id="password"
+            label="password"
             variant="outlined"
-            label="Password"
+            title="Password"
             name="password"
             type="password"
+            placeholder="Enter Password"
             fullWidth
-            placeholder="Enter a password with minimum 6 characters"
-            value={formData?.password}
-            onChange={onChangeHandler}
+            onChange={handleChange}
           />
-           <Button className="button" variant="contained" onClick={() => login(formData)}>
-            LOGIN TO QKART
-           </Button>
+
+          {!fetchResponse && (
+            <Button
+              className="button"
+              variant="contained"
+              onClick={() => login(user)}
+            >
+              Login to QKart
+            </Button>
+          )}
+
+          <Box display="flex" justifyContent="center" alignItems="center">
+            {fetchResponse && <Load />}
+          </Box>
+
           <p className="secondary-action">
             Don't have an account?{" "}
-            <Link className="link" to="/register">Register Now</Link>
+            <Link className="link" to="/register">
+              Register now
+            </Link>
           </p>
         </Stack>
       </Box>
