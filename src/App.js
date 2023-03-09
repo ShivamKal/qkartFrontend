@@ -14,6 +14,7 @@ export const config = {
   endpoint: `https://qkart-frontend-vj56.onrender.com/api/v1`,
 };
 
+
 function App() {
   return (
     <div className="App">
