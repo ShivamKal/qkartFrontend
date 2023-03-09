@@ -1,61 +1,60 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Avatar, Button, Stack } from "@mui/material";
+import { Link, useHistory } from "react-router-dom";
 import Box from "@mui/material/Box";
-import React, {useEffect} from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import React from "react";
 import "./Header.css";
 
 const Header = ({ children, hasHiddenAuthButtons }) => {
-  let history = useHistory();
-  const logout = () => {
-      localStorage.removeItem("username")
-      localStorage.removeItem("token")
-      localStorage.removeItem("balance")
-      history.push('/')
-      window.location.reload()
-  }
-  let username = localStorage.getItem("username") || ""
-  let box  = <Box></Box>;
-  let exploreBtn = <Button></Button>;
-  if(!hasHiddenAuthButtons) box = children;
-  if(hasHiddenAuthButtons){
-    exploreBtn =  <Button
-    className="explore-button"
-    startIcon={<ArrowBackIcon />}
-    variant="text"
-    onClick={() => history.push('/')}
-    >
-      Back to explore
-    </Button>
-  }
-  else if(username){
-    exploreBtn = <Stack direction="row" alignItems="center" sapcing={1}>
-      <Avatar src="avatar.png" alt={username} />
-      <p className="m-2">{username}</p>
-      <Button onClick={logout} variant="text">
-        LOGOUT
-      </Button>
-    </Stack>
-  }
-  else{
-    exploreBtn = <Stack direction="row" alignItems="center" sapcing={1}>
-      <Button onClick={() => {history.push('/login',{})}} variant="text">
-          LOGIN
-        </Button>
-        <Button onClick={() => {history.push('/register',{})}} variant="contained">
-          REGISTER
-        </Button>
-      </Stack>
-  }
-    return (
-      <Box className="header">
-        <Box className="header-title">
-            <img src="logo_light.svg" alt="QKart-icon"></img>
-        </Box>
-        {box}
-        {exploreBtn}
+  const history = useHistory();
+  const user = localStorage.getItem("username");
+  const isLoggedIn = user ? true : false;
+
+  const handleLogout = (event) => {
+    localStorage.clear();
+    // location.reload();
+    history.push("/");
+  };
+
+  return (
+    <Box className="header">
+      <Box className="header-title">
+        <img src="logo_light.svg" alt="QKart-icon"></img>
       </Box>
-    );
+
+      {children}
+
+      {!hasHiddenAuthButtons && (
+        <Button
+          className="explore-button"
+          startIcon={<ArrowBackIcon />}
+          variant="text"
+          onClick={() => history.push("/")}
+        >
+          Back to explore
+        </Button>
+      )}
+      {hasHiddenAuthButtons && !isLoggedIn && (
+        <Stack direction="row">
+          <Button variant="text" onClick={() => history.push("/login")}>
+            Login
+          </Button>
+          <Button variant="contained" onClick={() => history.push("/register")}>
+            Register
+          </Button>
+        </Stack>
+      )}
+      {hasHiddenAuthButtons && isLoggedIn && (
+        <Stack direction="row" spacing={2}>
+          <Avatar alt={user} src="avatar.png" />
+          <p style={{ marginTop: "10px" }}>{user}</p>
+          <Button variant="text" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Stack>
+      )}
+    </Box>
+  );
 };
 
 export default Header;
