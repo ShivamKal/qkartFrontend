@@ -8,7 +8,7 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Login.css";
-import Load from "./MUI/Loading";
+import Load from "./asssets/Loading";
 
 const Login = () => {
   const { enqueueSnackbar } = useSnackbar();

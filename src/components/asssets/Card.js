@@ -7,7 +7,7 @@ import { Button, CardActionArea, CardActions } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Rating from './Rating';
 
-export default function MultiActionAreaCard(prop) {
+export default function CardC(prop) {
   return (
     <Card className={prop.className}>
       <CardActionArea>

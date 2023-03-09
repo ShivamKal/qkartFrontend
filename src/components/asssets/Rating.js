@@ -3,7 +3,7 @@ import * as React from "react";
 import Rating from "@mui/material/Rating";
 // import Typography from '@mui/material/Typography';
 
-export default function BasicRating(prop) {
+export default function RatingC(prop) {
   return (
     <>
       {/* <Typography component="legend">Read only</Typography> */}

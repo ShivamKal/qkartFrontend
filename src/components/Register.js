@@ -8,7 +8,7 @@ import Footer from "./Footer";
 import Header from "./Header";
 import "./Register.css";
 import { useHistory, Link } from "react-router-dom";
-import Load from "./MUI/Loading";
+import Load from "./asssets/Loading";
 
 const Register = () => {
   const { enqueueSnackbar } = useSnackbar();
