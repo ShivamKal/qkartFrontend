@@ -243,6 +243,7 @@ const Products = () => {
           ),
         }}
         onChange={handleSubmit}
+        
         placeholder="Search for items/categories"
         name="search"
       />
